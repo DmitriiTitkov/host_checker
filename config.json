@@ -1,0 +1,8 @@
+{
+	"databaseconfig":
+		{
+			"dsn": "connection string",
+			"minsize": 2,
+			"timeout": 5
+		}
+}
