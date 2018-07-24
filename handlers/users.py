@@ -1,6 +1,7 @@
 from model import Database
 from aiohttp import web
 import asyncpg
+from passlib.hash import sha512_crypt
 
 
 async def get(request: web.Request)-> web.Response:
@@ -62,7 +63,42 @@ async def post(request: web.Request, body: dict)-> web.Response:
     """
     try:
         db: Database = request.app['database']
-        result_id: dict = await db.users.add_user(body['login'], body['password'])
+        result_id: dict = await db.users.add_user(body['login'], sha512_crypt.hash(body['password']))
         return web.json_response(result_id, status=200)
     except asyncpg.exceptions.UniqueViolationError:
         return web.json_response({"error": "User with this login already exists"}, status=409)
+
+
+async def get_hosts(request: web.Request, login: str) -> web.Response:
+    """ Returns hosts for user
+       ---
+      tags:
+      - Users
+      description: Returns hosts for user
+      parameters:
+        - name: login
+          in: path
+          schema:
+            type: string
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    host:
+                      type: string
+        '400':
+          description: Validation error
+    """
+    print(login)
+    db: Database = request.app["database"]
+    result: dict = await db.hosts.get_hosts_for_user(login)
+    return web.json_response(result, status=200)
+
+
+
+

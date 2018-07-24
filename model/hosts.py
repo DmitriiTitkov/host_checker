@@ -1,6 +1,5 @@
 import asyncpg
 from asyncpg import Record
-import json
 
 
 class Hosts:
@@ -17,11 +16,23 @@ class Hosts:
             data = [dict(r) for r in iter(rows)]
         return data
 
-    async def add_host(self, host: str, port: int, protocol: str, status: str):
+    async def get_hosts_for_user(self, login: str) -> list:
+        async with self.__pool.acquire() as con:  # type: asyncpg.connection.Connection
+            rows: list[Record] = await con.fetch("""
+                SELECT h.host, h.port, h.protocol, h.status
+                FROM users u
+                JOIN users_hosts uh ON u.id = uh.user_id
+                JOIN hosts h ON h.id = uh.host_id
+                WHERE login = $1;
+                """, login)
+            data = [dict(r) for r in iter(rows)]
+        return data
+
+    async def add_host(self, host: str, port: int, protocol: str):
         async with self.__pool.acquire() as con:  # type: asyncpg.connection.Connection
             res: Record = await con.fetchrow(
-                """INSERT INTO hosts (host, port, protocol, status) VALUES ($1, $2, $3, $4) RETURNING id;""",
-                host, port, protocol, status)
+                """INSERT INTO hosts (host, port, protocol) VALUES ($1, $2, $3) RETURNING id;""",
+                host, port, protocol)
             return dict(res)
 
     async def get_host(self, host_id: str) -> dict:

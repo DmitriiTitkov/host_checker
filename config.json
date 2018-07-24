@@ -1,7 +1,7 @@
 {
 	"databaseconfig":
 		{
-			"dsn": "connection string",
+			"dsn": "postgres://postgres:mysecretpassword@127.0.0.1:5432/host_checker",
 			"minsize": 2,
 			"timeout": 5
 		}

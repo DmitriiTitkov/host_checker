@@ -2,7 +2,7 @@
 DATABASE="host_checker"
 USERNAME="postgres"
 HOsTNAME="127.0.0.1"
-export PGPASSWORD=""
+export PGPASSWORD="mysecretpassword"
 
 psql -h $HOSTNAME -U $USERNAME -v ON_ERROR_STOP=1 <<-EOSQL
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -11,7 +11,7 @@ CREATE DATABASE $DATABASE;
 CREATE TABLE users(
    id serial,
    login varchar(30) PRIMARY KEY,
-   password varchar(30),
+   password varchar(120),
    UNIQUE(id)
    
 );

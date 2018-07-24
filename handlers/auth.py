@@ -4,15 +4,30 @@ from aiohttp import web
 from passlib.hash import sha512_crypt
 
 
-async def auth_post(request: web.Request):
+async def auth_get(request: web.Request):
+    """ Returns default auth page
+       ---
+      tags:
+      - HTML Pages
+      description: Returns authentication page
+
+      responses:
+        '200':
+          description: OK
+    """
+    return aiohttp_jinja2.render_template('auth.html', request, {}, app_key=aiohttp_jinja2.APP_KEY, encoding='utf-8')
+
+
+async def auth_post(request: web.Request, body):
     """ Local user Authentication
        ---
       tags:
       - Authentication
-      description: gLocal user Authentication
+      description: Local user Authentication
       parameters:
       - name: body
         in: body
+        type: object
         schema:
           type: object
           properties:
@@ -22,6 +37,9 @@ async def auth_post(request: web.Request):
                 type: string
           required:
             - login
+            - password
+        required:
+          - body
       responses:
         '200':
           description: OK
@@ -32,26 +50,25 @@ async def auth_post(request: web.Request):
         '400':
           description: Validation error
     """
+    print(body)
     authenticated = False
-    json_data = await request.json()
-    login = json_data.get("login", None)
-    password = json_data.get("password", None)
     db = request.app['database']
 
-    user_data = await db.users.get_user(login)
+    user_data = await db.users.get_user(body['login'])
     if user_data:
-        if sha512_crypt.verify(password, user_data["password"]):
+        if sha512_crypt.verify(body['password'], user_data["password"]):
             authenticated = True
 
     response_data = {
         "authenticated": authenticated
     }
-    if authenticated:
-        session = await get_session(request)
-        session['user'] = login
-        return web.json_response(response_data, status=200)
-    else:
+
+    if not authenticated:
         return web.json_response(response_data, status=401)
+
+    session = await get_session(request)
+    session['user'] = body['login']
+    return web.json_response(response_data, status=200)
 
 
 async def logout(request: web.Request):

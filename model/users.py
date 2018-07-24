@@ -15,8 +15,7 @@ class Users:
                 FROM 
                     users
                 """)
-            data = [r["login"] for r in iter(rows)]
-        return data
+            return [r["login"] for r in iter(rows)]
 
     async def add_user(self, login: str, password: str) -> dict:
         async with self.__pool.acquire() as con:  # type: asyncpg.Connection

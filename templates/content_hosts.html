@@ -1,0 +1,19 @@
+{% extends "master.html" %}
+{% block content %}
+    <table>
+        <thead>
+            <td> Hostname </td>
+            <td> Port </td>
+            <td> Protocol </td>
+            <td> Status </td>
+        </thead>
+    {% for host in hosttable %}
+        <tr>
+            <td>{{ host.host }}</td>
+            <td>{{ host.port }}</td>
+            <td>{{ host.protocol }}</td>
+            <td>{{ host.status }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

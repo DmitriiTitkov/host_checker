@@ -8,6 +8,7 @@ import json
 from model import Database
 from aiohttp_apiset.middlewares import jsonify
 from aiohttp_apiset import SwaggerRouter
+import aiohttp_session
 
 
 
@@ -21,7 +22,8 @@ async def create_pool(config: dict =json.load(open('config.json'))) -> asyncpg.p
 
 def main():
     router = SwaggerRouter(swagger_ui='/swagger/')
-    app = web.Application(router=router, middlewares=[jsonify])
+    session_middleware = aiohttp_session.session_middleware(aiohttp_session.SimpleCookieStorage())
+    app = web.Application(router=router, middlewares=[jsonify, session_middleware])
     add_routes(app)
     aiohttp_jinja2.setup(app, loader=jinja2.FileSystemLoader('templates'))
 

@@ -1,0 +1,1 @@
+1) How set ID for item in database after PUT request to non existent resource?

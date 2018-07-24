@@ -49,10 +49,14 @@ class Hosts:
                    type: integer
                   protocol:
                    type: string
-                  status:
-                   type: string
-              required:
-                  - host, port, protocol
+                   enum:
+                    - tcp
+                    - udp
+                required:
+                  - host
+                  - port
+                  - protocol
+                maxProperties: 3
           responses:
             '200':
               description: OK
@@ -60,7 +64,7 @@ class Hosts:
               description: Validation error
         """
         db: Database = request.app['database']
-        resp = await db.hosts.add_host(body["host"], body["port"], body["protocol"], body["status"])
+        resp = await db.hosts.add_host(body["host"], body["port"], body["protocol"])
         return web.json_response(resp, status=200)
 
 
@@ -89,7 +93,8 @@ class Host:
                 description: Validation error
         """
         db: Database = request.app['database']
-        return await db.hosts.get_host(host_id)
+        resp = await db.hosts.get_host(host_id)
+        return web.json_response(resp, status=200)
 
     async def put(self, request: web.Request, host_id: int, body: dict) -> web.Response:
         """ Update existing host record otr create new if not exist
