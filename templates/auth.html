@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <title>HomePage</title>
     <script type="text/javascript" src="../static/javascript/jquery-3.2.1.min.js"></script>
-    <script type="text/javascript" src="../static/javascript/auth.js"></script>
+    <!--<script type="text/javascript" src="../static/javascript/auth.js"></script>-->
 
 </head>
 <body>
 <div id="authFormContainer">
-    <form id="authForm">
+    <form id="authForm"  method="post">
+        <fieldset>
         <div>
             <label for="login">Login</label>
             <input id="login" type="text" name="login">
@@ -23,6 +24,7 @@
             <button type="submit">Login</button>
             <button type="button">Cancel</button>
         </div>
+        </fieldset>
     </form>
 </div>
 </body>

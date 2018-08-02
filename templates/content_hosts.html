@@ -1,6 +1,13 @@
 {% extends "master.html" %}
+{% block links %}
+<script type="text/javascript" src="../static/javascript/hosts.js"></script>
+{% endblock %}
 {% block content %}
     <table>
+        <thead>
+            <td colspan="3"> Hosts: </td>
+            <td> <a>Add</a><a>Remove</a> </td>
+        </thead>
         <thead>
             <td> Hostname </td>
             <td> Port </td>

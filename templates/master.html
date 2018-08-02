@@ -4,7 +4,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<title>Host Checker</title>
 	<link rel="stylesheet" type="text/css" href="/static/css/main.css">
-
+    <script type="text/javascript" src="../static/javascript/jquery-3.2.1.min.js"></script>
 
 	<script type="text/javascript">
 		/* =============================
@@ -17,11 +17,16 @@
 			document.write(bodyText[Math.floor(Math.random()*7)]+" ")
 		}
 	</script>
+    {% block links %}
+    {% endblock %}
 </head>
 
 <body>
 
-	<header id="header"><p>Host Checker</p></header>
+	<header id="header">
+		<p>Host Checker</p>
+        <div id="userInfo"><p>{{ user.name }}(<a href="{{ links.logout }}">Logout</a>)</p></div>
+	</header>
 
 	<div id="container">
 
