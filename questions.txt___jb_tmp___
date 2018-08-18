@@ -4,4 +4,3 @@
      hosts.py
      users.py
      hosts_users.py  <-  (code for adding and removing users hosts associations)
-     

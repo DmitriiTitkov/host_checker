@@ -100,5 +100,62 @@ async def get_hosts(request: web.Request, login: str) -> web.Response:
     return web.json_response(result, status=200)
 
 
+async def add_host(request: web.Request, login: str, body: dict) -> web.Response:
+    """ Adds host for user
+       ---
+      tags:
+      - Users
+      description: Adds host for user
+      parameters:
+        - name: login
+          in: path
+          schema:
+            type: string
+        - name: body
+          in: body
+          schema:
+            type: object
+            properties:
+              host:
+               type: string
+              port:
+               type: integer
+              protocol:
+               type: string
+               enum:
+                - tcp
+                - udp
+            required:
+              - host
+              - port
+              - protocol
+            maxProperties: 3
+      responses:
+        200:
+          description: OK
+          content:
+            application/json:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    host:
+                      type: string
+        '400':
+          description: Validation error
+    """
+    # check if host existss
+    print(login)
+    host, port, protocol = [val for val in body.values()]
+    db: Database = request.app["database"]
+    try:
+        host_id = await db.hosts.add_host(host, port, protocol)
+    except asyncpg.exceptions.UniqueViolationError:
+        # duplicated value found
+        pass
+    if host:
+        await db.hosts.ad
+    result: dict = await db.hosts.get_hosts_for_user(login)
+    return web.json_response(result, status=200)
 
 

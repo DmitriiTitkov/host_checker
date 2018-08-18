@@ -17,6 +17,7 @@ def add_routes(app: web.Application):
     # static
     # app.router.add_route([web.static('/static', '/home/dmitrii/code/host_checker/static', show_index=True)])
     app.router.add_static('/static', 'static')
+
     #  hosts
     app.router.add_route(hdrs.METH_GET, '/hosts', Hosts.get)
     app.router.add_route(hdrs.METH_POST, '/hosts', Hosts.post)
@@ -28,5 +29,6 @@ def add_routes(app: web.Application):
     app.router.add_route(hdrs.METH_GET, '/users', users.get)
     app.router.add_route(hdrs.METH_POST, '/users', users.post)
     app.router.add_route(hdrs.METH_GET, '/users/{login}/hosts', users.get_hosts)
+    app.router.add_route(hdrs.METH_POST, '/users/{login}/hosts', users.add_host)
 
 

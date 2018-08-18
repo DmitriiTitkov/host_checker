@@ -16,6 +16,7 @@
         </thead>
     {% for host in hosttable %}
         <tr>
+            <td id="selector"><input type="checkbox" value="{{ host.id }}"/></td>
             <td>{{ host.host }}</td>
             <td>{{ host.port }}</td>
             <td>{{ host.protocol }}</td>

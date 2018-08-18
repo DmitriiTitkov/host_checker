@@ -1,13 +1,10 @@
 import asyncpg
-from asyncpg import Record
+from asyncpg import Record, exceptions
+from model import AbstractDBModule
 
-
-class Hosts:
-    def __init__(self, pool: asyncpg.pool.Pool) -> None:
-        self.__pool = pool
-
+class Hosts(AbstractDBModule):
     async def get_hosts(self) -> list:
-        async with self.__pool.acquire() as con:  # type: asyncpg.connection.Connection
+        async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
             rows: list[Record] = await con.fetch("""
                 SELECT * 
                 FROM 
@@ -17,7 +14,7 @@ class Hosts:
         return data
 
     async def get_hosts_for_user(self, login: str) -> list:
-        async with self.__pool.acquire() as con:  # type: asyncpg.connection.Connection
+        async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
             rows: list[Record] = await con.fetch("""
                 SELECT h.host, h.port, h.protocol, h.status
                 FROM users u
@@ -29,14 +26,17 @@ class Hosts:
         return data
 
     async def add_host(self, host: str, port: int, protocol: str):
-        async with self.__pool.acquire() as con:  # type: asyncpg.connection.Connection
-            res: Record = await con.fetchrow(
-                """INSERT INTO hosts (host, port, protocol) VALUES ($1, $2, $3) RETURNING id;""",
-                host, port, protocol)
-            return dict(res)
+        try:
+            async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
+                res: Record = await con.fetchrow(
+                    """INSERT INTO hosts (host, port, protocol) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING id SELECT 'i' AS source, id""",
+                    host, port, protocol)
+                return dict(res)
+        except asyncpg.exceptions.UniqueViolationError:
+            raise
 
     async def get_host(self, host_id: str) -> dict:
-        async with self.__pool.acquire() as con:  # type: asyncpg.connection.Connection
+        async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
             res: Record = await con.fetchrow("""
                 SELECT * 
                 FROM 
@@ -46,7 +46,7 @@ class Hosts:
             return dict(res)
 
     async def update_host(self, host_id: int, host: str, port: int, protocol: str) -> dict:
-        async with self.__pool.acquire() as con:  # type: asyncpg.connection.Connection
+        async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
             res: Record = await con.fetchrow(
                 """INSERT INTO hosts (id, host, port, protocol) VALUES ($1, $2, $3, $4) 
                 ON CONFLICT (id) DO UPDATE SET host = $2, port = $3, protocol = $4 RETURNING id;""",
@@ -54,8 +54,19 @@ class Hosts:
             return dict(res)
 
     async def remove_host(self, host_id: str) -> dict:
-        async with self.__pool.acquire() as con:  # type: asyncpg.connection.Connection
+        async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
             resp = await con.execute("""DELETE FROM hosts WHERE id = $1""", host_id)
             if resp == 'DELETE 0':
                 return False
             return True
+
+
+    async def get_host_by_name(self, host_name: str) -> dict:
+        async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
+            res: Record = await con.fetchrow("""
+                SELECT * 
+                FROM 
+                    hosts
+                WHERE host = $1
+                """, host_name)
+            return dict(res)

@@ -1,7 +1,7 @@
 #!/bin/sh
 DATABASE="host_checker"
 USERNAME="postgres"
-HOsTNAME="127.0.0.1"
+HOSTNAME="127.0.0.1"
 export PGPASSWORD="mysecretpassword"
 
 psql -h $HOSTNAME -U $USERNAME -v ON_ERROR_STOP=1 <<-EOSQL
@@ -21,7 +21,8 @@ CREATE TABLE hosts(
   protocol char(3),
   port INT,
   status varchar(20),
-  UNIQUE(id)
+  UNIQUE(id),
+  UNIQUE(host, protocol, port)
 
 );
 CREATE TABLE users_hosts(

@@ -63,6 +63,7 @@ class Hosts:
             '400':
               description: Validation error
         """
+        # check if host already exist
         db: Database = request.app['database']
         resp = await db.hosts.add_host(body["host"], body["port"], body["protocol"])
         return web.json_response(resp, status=200)
