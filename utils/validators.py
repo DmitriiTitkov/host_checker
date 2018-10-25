@@ -6,10 +6,10 @@ from aiohttp import web
 
 def authentication_required(f):
     @wraps(f)
-    async def wrapper(request: web.Request):
+    async def wrapper(request: web.Request, *args, **kwargs):
         session = await get_session(request)
         app = request.app
         if not session.get('user', None):
             return web.HTTPFound("{0}?source={1}".format(app.router['auth'].url(), quote(request.path_qs)))
-        return await f(request)
+        return await f(request, *args, **kwargs)
     return wrapper

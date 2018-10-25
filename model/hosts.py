@@ -2,6 +2,7 @@ import asyncpg
 from asyncpg import Record, exceptions
 from model import AbstractDBModule
 
+
 class Hosts(AbstractDBModule):
     async def get_hosts(self) -> list:
         async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
@@ -10,13 +11,13 @@ class Hosts(AbstractDBModule):
                 FROM 
                     hosts
                 """)
-            data = [dict(r) for r in iter(rows)]
+            data = [dict(r) for r in rows]
         return data
 
     async def get_hosts_for_user(self, login: str) -> list:
         async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
             rows: list[Record] = await con.fetch("""
-                SELECT h.host, h.port, h.protocol, h.status
+                SELECT h.id, h.host, h.port, h.is_active
                 FROM users u
                 JOIN users_hosts uh ON u.id = uh.user_id
                 JOIN hosts h ON h.id = uh.host_id
@@ -25,48 +26,62 @@ class Hosts(AbstractDBModule):
             data = [dict(r) for r in iter(rows)]
         return data
 
-    async def add_host(self, host: str, port: int, protocol: str):
+    async def add_host(self, host: str, port: int) -> dict:
         try:
             async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
                 res: Record = await con.fetchrow(
-                    """INSERT INTO hosts (host, port, protocol) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING RETURNING id SELECT 'i' AS source, id""",
-                    host, port, protocol)
+                    """INSERT INTO hosts (host, port) VALUES ($1, $2) 
+                       RETURNING id;""",
+                    host, port)
                 return dict(res)
         except asyncpg.exceptions.UniqueViolationError:
             raise
 
-    async def get_host(self, host_id: str) -> dict:
+    async def get_host_by_id(self, host_id: str) -> dict:
         async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
             res: Record = await con.fetchrow("""
-                SELECT * 
+                SELECT id, host, port, is_active  
                 FROM 
                     hosts
                 WHERE id = $1
                 """, host_id)
+            if res:
+                return dict(res)
+
+
+    async def get_host(self, host: str, port: int) -> dict:
+        async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
+            res: Record = await con.fetchrow("""
+                SELECT id, host, port, is_active 
+                FROM 
+                    hosts
+                WHERE host = $1 AND
+                      port = $2
+                """, host, port)
             return dict(res)
 
-    async def update_host(self, host_id: int, host: str, port: int, protocol: str) -> dict:
+    async def update_host(self, host_id: int, host: str, port: int) -> bool:
         async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
-            res: Record = await con.fetchrow(
-                """INSERT INTO hosts (id, host, port, protocol) VALUES ($1, $2, $3, $4) 
-                ON CONFLICT (id) DO UPDATE SET host = $2, port = $3, protocol = $4 RETURNING id;""",
-                host_id, host, port, protocol)
-            return dict(res)
+            res: str= await con.execute(
+                """ UPDATE hosts SET host = $2, port = $3 WHERE id = $1;""",
+                host_id, host, port)
+            if res == 'UPDATE 0':
+                return False
+            return True
 
-    async def remove_host(self, host_id: str) -> dict:
+    async def update_host_status(self, host_id: int, is_active: str) -> bool:
         async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
-            resp = await con.execute("""DELETE FROM hosts WHERE id = $1""", host_id)
-            if resp == 'DELETE 0':
+            res: str = await con.execute(
+                """UPDATE hosts SET is_active = $2 WHERE id = $1;""",
+                host_id, is_active)
+            if res == 'UPDATE 0':
                 return False
             return True
 
 
-    async def get_host_by_name(self, host_name: str) -> dict:
+    async def remove_host(self, host_id: str) -> bool:
         async with self._pool.acquire() as con:  # type: asyncpg.connection.Connection
-            res: Record = await con.fetchrow("""
-                SELECT * 
-                FROM 
-                    hosts
-                WHERE host = $1
-                """, host_name)
-            return dict(res)
+            res = await con.execute("""DELETE FROM hosts WHERE id = $1""", host_id)
+            if res == 'DELETE 0':
+                return False
+            return True

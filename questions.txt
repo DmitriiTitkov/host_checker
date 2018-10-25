@@ -1,7 +1,8 @@
-1) How set ID for item in database after PUT request to non existent resource?
-2) Do I need to move model code for many to many relationship table to separate file?
-    e.g. :
-     hosts.py
-     users.py
-     hosts_users.py  <-  (code for adding and removing users hosts associations)
-     
+I was getting errors stopping application. That is a confirmed bug.
+https://github.com/python/asyncio/issues/258
+https://github.com/aio-libs/aiohttp/issues/441
+
+
+
+Fix Pull Request:
+https://github.com/python/cpython/commit/319c0345cdd8fddb49d235462e71883f1dd51b99

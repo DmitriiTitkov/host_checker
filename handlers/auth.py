@@ -18,7 +18,7 @@ async def auth_get(request: web.Request):
     return aiohttp_jinja2.render_template('auth.html', request, {}, app_key=aiohttp_jinja2.APP_KEY, encoding='utf-8')
 
 
-async def auth_post(request: web.Request, source: str, login: str, password: str):
+async def auth_post(request: web.Request, login: str, password: str, source: str):
     """ Local user Authentication
        ---
       tags:
@@ -28,21 +28,32 @@ async def auth_post(request: web.Request, source: str, login: str, password: str
       - in: formData
         name: login
         type: string
+        required: true
       - in: formData
         name: password
         type: string
+        required: true
 
       - name: source
         in: query
         schema:
           type: string
+
       responses:
         '200':
           description: OK
           schema:
             type: object
             properties:
-              authenticated: string
+              authenticated: string,
+              user: string
+
+        '302':
+          description: Redirect so source parameter if was passed.
+
+        '401':
+          description: Unauthorized. Could not validate credentials provided.
+
         '400':
           description: Validation error
     """
@@ -54,18 +65,20 @@ async def auth_post(request: web.Request, source: str, login: str, password: str
         if sha512_crypt.verify(password, user_data["password"]):
             authenticated = True
 
-    response_data = {
-        "authenticated": authenticated
-    }
-
     if not authenticated:
         return web.HTTPUnauthorized()
 
     session = await get_session(request)
     session['user'] = login
+    session['userID'] = user_data["id"]
+
     if source:
-        print(source)
         return web.HTTPFound(source)
+
+    response_data = {
+        "authenticated": authenticated,
+        "user": login
+    }
     return web.json_response(response_data, status=200)
 
 
@@ -83,4 +96,5 @@ async def logout(request: web.Request):
     if session.get("user", None):
         session.clear()
 
+    # TODO: change to 200 and load logout page on client side
     return aiohttp_jinja2.render_template('logout.html', request, {}, app_key=aiohttp_jinja2.APP_KEY, encoding='utf-8')

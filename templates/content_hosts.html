@@ -1,18 +1,20 @@
 {% extends "master.html" %}
 {% block links %}
 <script type="text/javascript" src="../static/javascript/hosts.js"></script>
+<link rel="stylesheet" type="text/css" href="/static/css/content_hosts.css">
 {% endblock %}
 {% block content %}
     <table>
         <thead>
             <td colspan="3"> Hosts: </td>
-            <td> <a>Add</a><a>Remove</a> </td>
+            <td> <img class="addIcon" src="../static/images/Add_plus_new_user_green_page_file_up_text.png"> </td>
         </thead>
         <thead>
             <td> Hostname </td>
             <td> Port </td>
             <td> Protocol </td>
             <td> Status </td>
+            <td></td>
         </thead>
     {% for host in hosttable %}
         <tr>
@@ -21,6 +23,7 @@
             <td>{{ host.port }}</td>
             <td>{{ host.protocol }}</td>
             <td>{{ host.status }}</td>
+            <td><img class="removeIcon" src="../static/images/trash-circle-red-512.png"></td>
         </tr>
     {% endfor %}
     </table>

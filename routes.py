@@ -5,14 +5,12 @@ from handlers import users
 from aiohttp import hdrs
 
 
-
 def add_routes(app: web.Application):
     # html
     app.router.add_route(hdrs.METH_GET, '/', html.home)
     app.router.add_route(hdrs.METH_GET, '/auth', auth.auth_get, name='auth')
     app.router.add_route(hdrs.METH_POST, '/auth', auth.auth_post)
     app.router.add_route(hdrs.METH_GET, '/logout', auth.logout, name='logout')
-
 
     # static
     # app.router.add_route([web.static('/static', '/home/dmitrii/code/host_checker/static', show_index=True)])
@@ -30,5 +28,4 @@ def add_routes(app: web.Application):
     app.router.add_route(hdrs.METH_POST, '/users', users.post)
     app.router.add_route(hdrs.METH_GET, '/users/{login}/hosts', users.get_hosts)
     app.router.add_route(hdrs.METH_POST, '/users/{login}/hosts', users.add_host)
-
-
+    app.router.add_route(hdrs.METH_DELETE, '/users/{login}/hosts/{host_id}', users.remove_host)

@@ -6,13 +6,13 @@ class Users(AbstractDBModule):
     async def get_users(self) -> list:
         async with self._pool.acquire() as con:
             rows = await con.fetch("""
-                SELECT 
-                    login,
-                    password 
+                SELECT
+                    id, 
+                    login 
                 FROM 
                     users
                 """)
-            return [r["login"] for r in iter(rows)]
+            return [dict(r) for r in rows]
 
     async def add_user(self, login: str, password: str) -> dict:
         async with self._pool.acquire() as con:  # type: asyncpg.Connection
@@ -24,6 +24,7 @@ class Users(AbstractDBModule):
         async with self._pool.acquire() as con:
             row = await con.fetchrow("""
                 SELECT 
+                    id,
                     login,
                     password 
                 FROM 
@@ -33,7 +34,8 @@ class Users(AbstractDBModule):
                 """, user_name)
             if row:
                 return {
-                    'login': row[0],
-                    'password': row[1]
+                    'id': row[0],
+                    'login': row[1],
+                    'password': row[2]
                 }
             return None
